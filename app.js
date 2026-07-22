@@ -3884,9 +3884,6 @@ async function fetchCloverInventory() {
 
         return inventoryData;
     }
-
-        return inventoryData;
-    }
 }
 
 // Ensure "hidden-tv" and "blur-tv" tags exist on Clover
