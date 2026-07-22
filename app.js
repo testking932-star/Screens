@@ -4312,6 +4312,9 @@ function renderTVMenu(items, allowedCategories = []) {
             item.categories && item.categories.elements && item.categories.elements.some(c => c.name.toLowerCase() === catName.toLowerCase())
         );
 
+        // Sort category items according to saved custom item arrangement order
+        catItems = sortItemsByCustomOrder(catItems);
+
         // Combine Biryani & Pulao pairs into a single line
         catItems = combineBiryaniPulaoItems(catItems);
 
@@ -4498,6 +4501,65 @@ function getItemImageFallback(item) {
     return 'assets/burger.png';
 }
 
+// Helper to get saved custom item ordering array from localStorage
+function getItemCustomOrder() {
+    try {
+        return JSON.parse(localStorage.getItem('clover_menu_custom_item_order') || '[]');
+    } catch (e) {
+        return [];
+    }
+}
+
+// Helper to save custom item ordering array to localStorage
+function saveItemCustomOrder(orderArray) {
+    localStorage.setItem('clover_menu_custom_item_order', JSON.stringify(orderArray));
+}
+
+// Sort item array according to saved custom item order
+function sortItemsByCustomOrder(items) {
+    if (!items || !Array.isArray(items)) return items;
+    const customOrder = getItemCustomOrder();
+    if (customOrder.length === 0) return items;
+
+    return [...items].sort((a, b) => {
+        const idxA = customOrder.indexOf(a.id);
+        const idxB = customOrder.indexOf(b.id);
+        if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+        if (idxA !== -1) return -1;
+        if (idxB !== -1) return 1;
+        return 0;
+    });
+}
+
+// Move item position up or down in custom order
+function moveItemInCustomOrder(itemId, direction, currentList) {
+    let order = getItemCustomOrder();
+    
+    // If order list doesn't contain current items yet, populate it in current list sequence
+    currentList.forEach(item => {
+        if (!order.includes(item.id)) {
+            order.push(item.id);
+        }
+    });
+
+    const currentIndex = order.indexOf(itemId);
+    if (currentIndex === -1) return;
+
+    if (direction === 'up' && currentIndex > 0) {
+        // Swap with previous item
+        const temp = order[currentIndex - 1];
+        order[currentIndex - 1] = order[currentIndex];
+        order[currentIndex] = temp;
+    } else if (direction === 'down' && currentIndex < order.length - 1) {
+        // Swap with next item
+        const temp = order[currentIndex + 1];
+        order[currentIndex + 1] = order[currentIndex];
+        order[currentIndex] = temp;
+    }
+
+    saveItemCustomOrder(order);
+}
+
 // Render Admin Panel list
 function renderAdminList(categoryFilter = 'all') {
     const list = document.getElementById('admin-inventory-list');
@@ -4511,6 +4573,9 @@ function renderAdminList(categoryFilter = 'all') {
         // categoryFilter is now an actual category name (e.g. "Beverages")
         return item.categories && item.categories.elements && item.categories.elements.some(c => c.name.toLowerCase() === categoryFilter.toLowerCase());
     });
+
+    // Sort items by custom arrangement order
+    filteredItems = sortItemsByCustomOrder(filteredItems);
 
     // Apply search query filter (searches by name or category name)
     if (adminSearchQuery) {
@@ -4533,7 +4598,7 @@ function renderAdminList(categoryFilter = 'all') {
         return;
     }
 
-    filteredItems.forEach(item => {
+    filteredItems.forEach((item, index) => {
         const isHidden = item.tags && item.tags.elements && item.tags.elements.some(t => t.name === 'hidden-tv');
         const isBlurred = item.tags && item.tags.elements && item.tags.elements.some(t => t.name === 'blur-tv');
         const isPOSAvailable = item.available !== false && (item.autoManage !== true || !item.itemStock || item.itemStock.quantity > 0);
@@ -4569,6 +4634,10 @@ function renderAdminList(categoryFilter = 'all') {
             </div>
             
             <div class="admin-item-actions">
+                <div class="item-reorder-controls" style="display: flex; gap: 5px; margin-right: 10px;">
+                    <button class="sort-arrow-btn move-item-btn" data-action="move-up" data-id="${item.id}" title="Move Up" ${index === 0 ? 'disabled' : ''}>▲</button>
+                    <button class="sort-arrow-btn move-item-btn" data-action="move-down" data-id="${item.id}" title="Move Down" ${index === filteredItems.length - 1 ? 'disabled' : ''}>▼</button>
+                </div>
                 <button class="toggle-btn ${isHidden ? 'btn-disabled-state' : 'btn-active-state'}" data-action="toggle-hidden" data-id="${item.id}" data-active="${isHidden}">
                     ${isHidden ? '✕ Hidden on TV' : '✓ Showing on TV'}
                 </button>
@@ -4579,6 +4648,20 @@ function renderAdminList(categoryFilter = 'all') {
         `;
 
         list.appendChild(row);
+    });
+
+    // Attach click events to item move buttons
+    list.querySelectorAll('.move-item-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const btnEl = e.currentTarget;
+            const itemId = btnEl.getAttribute('data-id');
+            const action = btnEl.getAttribute('data-action');
+            const direction = action === 'move-up' ? 'up' : 'down';
+
+            moveItemInCustomOrder(itemId, direction, filteredItems);
+            renderAdminList(categoryFilter);
+            showToast('Item arrangement updated.', 'success');
+        });
     });
 
     // Attach click events to toggles
