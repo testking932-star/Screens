@@ -69,13 +69,15 @@ async function handleRequest(request) {
 
         const forwardHeaders = new Headers();
         for (const [key, value] of request.headers.entries()) {
-            if (!["host", "content-length", "connection", "accept-encoding", "authorization"].includes(key.toLowerCase())) {
+            if (!["host", "content-length", "connection", "accept-encoding"].includes(key.toLowerCase())) {
                 forwardHeaders.set(key, value);
             }
         }
 
-        // Inject Clover API Authorization Token
-        forwardHeaders.set("Authorization", `Bearer ${DEFAULT_TOKEN}`);
+        // Inject Clover API Authorization Token (Override HTTP Basic Auth header)
+        if (DEFAULT_TOKEN) {
+            forwardHeaders.set("Authorization", `Bearer ${DEFAULT_TOKEN}`);
+        }
 
         const init = {
             method: request.method,
