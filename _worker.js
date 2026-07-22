@@ -5,7 +5,7 @@ const IMAGES = {"/logo-Cs-5la-o.png": {"mime": "image/png", "data": "iVBORw0KGgo
 const DEFAULT_MERCHANT_ID = "CZ1GKW98EHFT1";
 const DEFAULT_TOKEN = "c938e9d4-5e04-21fe-1255-4615b749fd65";
 const EXPECTED_AUTH = "Basic S3VzaGk6S2dmQDIwMjU=";
-let SAVED_CONFIG = {};
+let SAVED_CONFIG = {"test": "ok"};
 
 addEventListener("fetch", (event) => {
     event.respondWith(handleRequest(event.request));
