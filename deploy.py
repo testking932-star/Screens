@@ -134,7 +134,7 @@ async function handleRequest(request) {{
 
         const forwardHeaders = new Headers();
         for (const [key, value] of request.headers.entries()) {{
-            if (!["host", "content-length", "connection", "accept-encoding"].includes(key.toLowerCase())) {{
+            if (!["host", "content-length", "connection", "accept-encoding", "authorization"].includes(key.toLowerCase())) {{
                 forwardHeaders.set(key, value);
             }}
         }}
