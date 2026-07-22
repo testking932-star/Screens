@@ -4270,23 +4270,10 @@ function renderTVMenu(items, allowedCategories = []) {
         cols = itemsCount > 8 ? 2 : 1;
     }
 
-    const itemsPerColumn = Math.ceil(itemsCount / cols);
-    let fontSizeVal, gapVal, paddingVal, descFontSizeVal;
-
-    // Base scaling logic based on number of items that need to fit vertically
-    fontSizeVal = Math.max(1.6, Math.min(5.2, 38 / itemsPerColumn));
-    gapVal = Math.max(0.12, Math.min(0.6, 4 / itemsPerColumn));
-    paddingVal = Math.max(0.04, Math.min(0.15, 1.2 / itemsPerColumn));
-
-    // Refine font size based on aspect ratio to prevent wrapping
-    if (aspectRatio < 0.7) {
-        // Tall portrait screen: make text slightly smaller to prevent text wrapping on long names
-        fontSizeVal *= 0.9;
-    } else if (aspectRatio > 1.8 && cols === 3) {
-        // Ultra-wide screen with 3 columns: can make text slightly larger
-        fontSizeVal *= 1.05;
-    }
-
+    // Standardized unified typography & spacing scale across all TV screens
+    fontSizeVal = 2.45;
+    gapVal = 0.28;
+    paddingVal = 0.08;
     descFontSizeVal = fontSizeVal * 0.52;
 
     // Apply computed CSS custom properties to the grid using our custom variables
