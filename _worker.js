@@ -23,10 +23,13 @@ async function handleRequest(request) {
     const url = new URL(request.url);
     const path = url.pathname;
 
-    // 0. USERNAME & PASSWORD AUTHENTICATION GUARD
+    // 0. USERNAME & PASSWORD AUTHENTICATION GUARD WITH COOKIE DEVICE PERSISTENCE
     if (request.method !== "OPTIONS") {
         const reqAuthHeader = request.headers.get("Authorization");
-        if (!reqAuthHeader || reqAuthHeader !== EXPECTED_AUTH) {
+        const cookieHeader = request.headers.get("Cookie") || "";
+        const hasValidCookie = cookieHeader.includes("app_auth_session=granted_kushi_2025");
+
+        if (!hasValidCookie && (!reqAuthHeader || reqAuthHeader !== EXPECTED_AUTH)) {
             return new Response("Unauthorized Access. Authentication Required.", {
                 status: 401,
                 headers: {
@@ -140,6 +143,10 @@ async function handleRequest(request) {
 
     // Serve index.html for root and all app routes
     return new Response(HTML_DOC, {
-        headers: { "Content-Type": "text/html; charset=utf-8", "Access-Control-Allow-Origin": "*" }
+        headers: {
+            "Content-Type": "text/html; charset=utf-8",
+            "Access-Control-Allow-Origin": "*",
+            "Set-Cookie": "app_auth_session=granted_kushi_2025; Path=/; Max-Age=315360000; SameSite=Lax"
+        }
     });
 }
