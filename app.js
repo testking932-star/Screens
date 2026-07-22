@@ -6,7 +6,7 @@
 const DEFAULT_CONFIG = {
     mode: 'live', // 'demo' or 'live'
     merchantId: 'CZ1GKW98EHFT1',
-    accessToken: 'c938e9d4-5e04-21fe-1255-4615b749fd65',
+    accessToken: '', // Token is securely injected server-side by worker proxy
     environment: 'prod', // 'prod' or 'sandbox'
     autoTags: true,
     refreshInterval: 10, // seconds (minimum 5s to respect Clover API rate limits)
@@ -3742,8 +3742,8 @@ async function cloverRequest(path, options = {}) {
 
 
 async function testCloverConnection() {
-    if (!config.merchantId || !config.accessToken) {
-        throw new Error('Missing Clover Merchant ID or Access Token');
+    if (!config.merchantId) {
+        throw new Error('Missing Clover Merchant ID');
     }
 
     // Perform a lightweight API call to verify credentials and merchant access
