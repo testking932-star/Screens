@@ -5,7 +5,7 @@
 // 1. STATE & CONFIGURATION MANAGEMENT
 const DEFAULT_CONFIG = {
     mode: 'live', // 'demo' or 'live'
-    merchantId: 'CZ1GKW98EHFT1',
+    merchantId: '', // Merchant ID is securely hidden server-side inside worker proxy
     accessToken: '', // Token is securely injected server-side by worker proxy
     environment: 'prod', // 'prod' or 'sandbox'
     autoTags: true,
@@ -3720,7 +3720,7 @@ function getCloverBaseUrl() {
 
 async function cloverRequest(path, options = {}) {
     const baseUrl = getCloverBaseUrl();
-    const url = `${baseUrl}/merchants/${config.merchantId}${path}`;
+    const url = config.merchantId ? `${baseUrl}/merchants/${config.merchantId}${path}` : `${baseUrl}${path}`;
 
     const headers = {
         'Authorization': `Bearer ${config.accessToken}`,
@@ -3742,10 +3742,6 @@ async function cloverRequest(path, options = {}) {
 
 
 async function testCloverConnection() {
-    if (!config.merchantId) {
-        throw new Error('Missing Clover Merchant ID');
-    }
-
     // Perform a lightweight API call to verify credentials and merchant access
     const result = await cloverRequest('/items?limit=1');
     if (!result || !('elements' in result)) {
