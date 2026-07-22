@@ -3701,16 +3701,67 @@ function loadConfig() {
     applyOrientationClass(config.orientation);
 }
 
+// Sync full local config, overrides, and item ordering to the remote hosting site (/api/config)
+async function syncConfigToHost() {
+    try {
+        const payload = {
+            config: config,
+            customItemOrder: getItemCustomOrder(),
+            localHidden: JSON.parse(localStorage.getItem('clover_menu_local_hidden') || '[]'),
+            localBlurred: JSON.parse(localStorage.getItem('clover_menu_local_blurred') || '[]'),
+            updatedAt: Date.now()
+        };
+        await fetch('/api/config', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+    } catch (e) {
+        console.warn('Failed to sync config to host server:', e);
+    }
+}
+
+// Fetch remote config from host server (/api/config) and apply to localStorage and memory
+async function syncConfigFromHost() {
+    try {
+        const response = await fetch('/api/config');
+        if (!response.ok) return false;
+        const remote = await response.json();
+        if (!remote || !remote.config || Object.keys(remote.config).length === 0) return false;
+
+        let changed = false;
+        config = { ...DEFAULT_CONFIG, ...remote.config };
+        localStorage.setItem('clover_menu_config', JSON.stringify(config));
+
+        if (Array.isArray(remote.customItemOrder)) {
+            localStorage.setItem('clover_menu_custom_item_order', JSON.stringify(remote.customItemOrder));
+        }
+        if (Array.isArray(remote.localHidden)) {
+            localStorage.setItem('clover_menu_local_hidden', JSON.stringify(remote.localHidden));
+        }
+        if (Array.isArray(remote.localBlurred)) {
+            localStorage.setItem('clover_menu_local_blurred', JSON.stringify(remote.localBlurred));
+        }
+
+        applyOrientationClass(config.orientation);
+        return true;
+    } catch (e) {
+        console.warn('Failed to fetch remote config from host server:', e);
+        return false;
+    }
+}
+
 // Apply Screen Orientation Styles dynamically
 function applyOrientationClass(orientation) {
     document.body.classList.remove('orientation-portrait', 'orientation-landscape', 'orientation-rotate90', 'orientation-rotate270');
     document.body.classList.add(`orientation-${orientation || 'portrait'}`);
 }
 
-// Save Configuration to LocalStorage
+// Save Configuration to LocalStorage & Remote Server
 function saveConfig(newConfig) {
     config = { ...config, ...newConfig };
     localStorage.setItem('clover_menu_config', JSON.stringify(config));
+    syncConfigToHost();
 }
 
 // 2. CLOVER API INTERFACE CLIENT
@@ -3927,6 +3978,7 @@ function saveLocalOverride(itemId, tagName, active) {
         list = list.filter(id => id !== itemId);
     }
     localStorage.setItem(key, JSON.stringify(list));
+    syncConfigToHost();
 }
 
 // Helper to remove override from local storage
@@ -4496,6 +4548,7 @@ function getItemCustomOrder() {
 // Helper to save custom item ordering array to localStorage
 function saveItemCustomOrder(orderArray) {
     localStorage.setItem('clover_menu_custom_item_order', JSON.stringify(orderArray));
+    syncConfigToHost();
 }
 
 // Sort item array according to saved custom item order
@@ -4936,6 +4989,7 @@ function stopSyncTimer() {
 // Pull data & update TV screens
 async function refreshDisplayData(categoryName, isSilent = false) {
     try {
+        await syncConfigFromHost();
         await fetchCloverInventory();
 
         // Parse allowed categories (comma-separated list support)
@@ -5503,6 +5557,11 @@ function init() {
         if (document.body.classList.contains('tv-mode') && currentTVItems.length > 0) {
             renderTVMenu(currentTVItems, currentTVAllowedCategories);
         }
+    });
+
+    // Sync latest remote host config then trigger router
+    syncConfigFromHost().then(updated => {
+        if (updated) handleRouting();
     });
 
     // Trigger Router

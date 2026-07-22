@@ -63,6 +63,14 @@ def build_worker():
                 "data": base64.b64encode(f.read()).decode("utf-8")
             }
 
+    config_data = {}
+    if os.path.exists("config.json"):
+        try:
+            with open("config.json", "r", encoding="utf-8") as f:
+                config_data = json.load(f)
+        except Exception:
+            pass
+
     worker_code = f"""const HTML_DOC = {json.dumps(html_content)};
 const CSS_DOC = {json.dumps(css_content)};
 const JS_DOC = {json.dumps(js_content)};
@@ -70,6 +78,7 @@ const IMAGES = {json.dumps(images)};
 const DEFAULT_MERCHANT_ID = {json.dumps(SERVER_MERCHANT_ID)};
 const DEFAULT_TOKEN = {json.dumps(SERVER_CLOVER_TOKEN)};
 const EXPECTED_AUTH = {json.dumps(expected_auth_str)};
+let SAVED_CONFIG = {json.dumps(config_data)};
 
 addEventListener("fetch", (event) => {{
     event.respondWith(handleRequest(event.request));
@@ -104,6 +113,37 @@ async function handleRequest(request) {{
                 }},
             }});
         }}
+    }}
+
+    // CONFIG PERSISTENCE API
+    if (path.startsWith("/api/config")) {{
+        if (request.method === "OPTIONS") {{
+            return new Response(null, {{
+                status: 204,
+                headers: {{
+                    "Access-Control-Allow-Origin": "*",
+                    "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+                    "Access-Control-Allow-Headers": "*",
+                }}
+            }});
+        }}
+        if (request.method === "POST") {{
+            try {{
+                const body = await request.json();
+                SAVED_CONFIG = body;
+                return new Response(JSON.stringify({{ status: "ok" }}), {{
+                    headers: {{ "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }}
+                }});
+            }} catch (err) {{
+                return new Response(JSON.stringify({{ error: err.message }}), {{
+                    status: 400,
+                    headers: {{ "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }}
+                }});
+            }}
+        }}
+        return new Response(JSON.stringify(SAVED_CONFIG || {{}}), {{
+            headers: {{ "Content-Type": "application/json", "Access-Control-Allow-Origin": "*" }}
+        }});
     }}
 
     // 1. CLOVER API PROXY HANDLER (WITH FULL PRIVACY SHIELD FOR ID & TOKEN)
