@@ -9,7 +9,7 @@ const DEFAULT_CONFIG = {
     accessToken: 'c938e9d4-5e04-21fe-1255-4615b749fd65',
     environment: 'prod', // 'prod' or 'sandbox'
     autoTags: true,
-    refreshInterval: 0.5, // seconds
+    refreshInterval: 10, // seconds (minimum 5s to respect Clover API rate limits)
     orientation: 'portrait', // 'portrait', 'landscape', 'rotate90', 'rotate270'
     screenRatio: '9-16', // 'auto', '16-9', '4-3', '21-9', '9-16'
     hiddenCategories: [], // Category names toggled off from all TV screens
@@ -3828,8 +3828,8 @@ async function fetchCloverInventory() {
             console.warn('Failed to cache live inventory to localStorage:', e);
         }
 
-        // Auto-provision tags if setting enabled
-        if (config.autoTags) {
+        // Auto-provision tags if setting enabled (only once per session)
+        if (config.autoTags && !cloverTags['hidden-tv']) {
             try {
                 await ensureCloverTagsExist();
             } catch (tagError) {
@@ -3841,26 +3841,28 @@ async function fetchCloverInventory() {
     } catch (error) {
         console.error('Clover data fetch failed. Error:', error);
 
+        // If inventoryData is already loaded in memory, retain current state silently
+        if (inventoryData && inventoryData.length > 0) {
+            console.warn('Clover request rate-limited or failed. Retaining current inventory in memory.');
+            return inventoryData;
+        }
+
         // Fallback to cache if available
         const cache = localStorage.getItem('clover_menu_live_cache');
         if (cache) {
             try {
                 const cachedItems = JSON.parse(cache);
                 inventoryData = applyLocalOverrides(cachedItems);
-                showToast('API Sync Failed. Using cached Clover data.', 'warning');
                 return inventoryData;
             } catch (e) {
                 console.error('Failed to parse cached live inventory:', e);
             }
         }
 
-        showToast('API Connection Failed. Reverting to Demo Mode.', 'error');
-
-        // Gracefully switch mode to demo
+        // Only switch to demo if no data exists at all
         config.mode = 'demo';
         saveConfig(config);
 
-        // Load custom demo inventory modifications from localStorage if exists
         const localMock = localStorage.getItem('clover_menu_mock_inventory');
         if (localMock) {
             try {
@@ -3871,6 +3873,9 @@ async function fetchCloverInventory() {
         } else {
             inventoryData = [...DEMO_INVENTORY];
         }
+
+        return inventoryData;
+    }
 
         return inventoryData;
     }
@@ -4802,7 +4807,9 @@ function formatLauncherLabel(val) {
 function startSyncTimer(categoryName) {
     stopSyncTimer();
 
-    const intervalMs = config.refreshInterval * 1000;
+    // Enforce minimum refresh interval of 5 seconds to comply with Clover API rate limits
+    const configuredSeconds = parseFloat(config.refreshInterval) || 10;
+    const safeIntervalMs = Math.max(5, configuredSeconds) * 1000;
 
     refreshTimer = setInterval(async () => {
         if (categoryName) {
@@ -4810,7 +4817,7 @@ function startSyncTimer(categoryName) {
         } else {
             await refreshAdminData(true);
         }
-    }, intervalMs);
+    }, safeIntervalMs);
 }
 
 function stopSyncTimer() {
