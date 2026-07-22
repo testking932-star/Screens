@@ -4271,7 +4271,7 @@ function renderTVMenu(items, allowedCategories = []) {
     }
 
     // Standardized unified typography & spacing scale across all TV screens
-    fontSizeVal = 2.95;
+    fontSizeVal = 3.25;
     gapVal = 0.28;
     paddingVal = 0.08;
     descFontSizeVal = fontSizeVal * 0.52;
