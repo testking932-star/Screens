@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Clover Menu Display</title>
+    <!-- Premium Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Tangerine:wght@400;700&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="style.css?v=15">
+</head>
+
+<body>
+
+    <!-- BACKGROUND EFFECTS -->
+    <div class="radial-bg"></div>
+    <div class="glow-orb" id="glow-orb-1"></div>
+    <div class="glow-orb" id="glow-orb-2"></div>
+
+    <!-- MAIN APP CONTAINER -->
+    <div class="app-container">
+
+        <!-- 1. TV SCREEN DISPLAY CHANNEL -->
+        <main id="view-tv" class="page-view hidden">
+
+            <!-- Main Menu content area -->
+            <div class="tv-content-container">
+                <div class="tv-screen-header">
+                    <img src="logo-Cs-5la-o.png" alt="Kushi Logo" class="tv-header-logo">
+                    <div class="tv-screen-text">
+                        <div class="tv-screen-title" id="tv-screen-title">APPETIZER</div>
+                        <div class="tv-screen-subtitle" id="tv-screen-subtitle">Freshly prepared selection from our
+                            Appetizer menu.</div>
+                    </div>
+                    <div class="tv-header-badges">
+                        <div class="badge-ribbon">BEST QUALITY</div>
+                        <div class="badge-halal">
+                            <span class="halal-text">حلال</span>
+                            <span class="halal-sub">HALAL</span>
+                        </div>
+                    </div>
+                </div>
+                <div id="tv-menu-grid" class="menu-grid">
+                    <!-- Dynamically populated from Clover inventory -->
+                </div>
+
+                <footer class="tv-footer">
+                    <div class="footer-logo">KUSHI INDIAN RESTAURANT</div>
+                    <div class="footer-time" id="tv-footer-time">12:00 PM</div>
+                </footer>
+            </div>
+        </main>
+
+        <!-- 2. UNIVERSAL ADMIN DASHBOARD VIEW -->
+        <main id="view-admin" class="page-view hidden">
+            <header class="admin-header">
+                <div class="admin-title-row">
+                    <div>
+                        <h1>Universal Menu Control Panel</h1>
+                        <p class="admin-subtitle">Toggle screen visibility, force-blur out-of-stock items, or switch
+                            channels.</p>
+                    </div>
+                    <div class="admin-controls-group">
+                        <span class="status-badge" id="admin-connection-status">
+                            <span class="pulse-dot" id="admin-status-dot"></span>
+                            <span id="admin-status-text">Demo Mode</span>
+                        </span>
+                        <button class="action-btn settings-btn" id="open-settings-btn">
+                            <svg class="icon-gear" viewBox="0 0 24 24">
+                                <path fill="currentColor"
+                                    d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" />
+                            </svg>
+                            Connection Settings
+                        </button>
+                    </div>
+                </div>
+
+                <div class="quick-nav-bar" id="admin-nav-tabs">
+                    <button class="nav-tab active" data-category="all">All Items</button>
+                    <!-- Dynamically populated from inventory categories -->
+                </div>
+
+                <!-- Admin Search Bar -->
+                <div class="admin-search-bar-wrap">
+                    <div class="admin-search-bar">
+                        <svg viewBox="0 0 24 24" class="search-icon" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                        </svg>
+                        <input type="text" id="admin-search-input" placeholder="Search items by name or category…" autocomplete="off">
+                        <button class="search-clear-btn hidden" id="admin-search-clear" title="Clear search">✕</button>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Category-Wise Toggle Controls -->
+            <section class="category-toggle-section" id="category-toggle-section">
+                <h3>Category Visibility Controls</h3>
+                <p class="section-desc">Toggle entire categories on or off across all TV screens. Disabled categories
+                    will be hidden from all displays.</p>
+                <div class="category-toggles-grid" id="category-toggles-grid">
+                    <!-- Dynamically populated -->
+                </div>
+            </section>
+
+            <!-- Admin Inventory List -->
+            <section class="admin-panel">
+                <div class="panel-header">
+                    <div class="col-info">Item Details</div>
+                    <div class="col-pos-status">Clover POS State</div>
+                    <div class="col-actions">TV Screen Overrides (Saved to Clover Tags)</div>
+                </div>
+                <div id="admin-inventory-list" class="admin-list-container">
+                    <!-- Dynamically populated -->
+                </div>
+            </section>
+        </main>
+
+        <!-- 3. CONFIGURATION / CREDENTIALS SETTING MODAL -->
+        <div id="settings-modal" class="modal-overlay hidden">
+            <div class="modal-card">
+                <div class="modal-header">
+                    <h2>Connection Settings</h2>
+                    <button class="close-modal-btn" id="close-settings-btn">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <form id="settings-form">
+                        <!-- Mode Selector -->
+                        <div class="form-group">
+                            <label>Data Provider Mode</label>
+                            <div class="toggle-switch-container">
+                                <button type="button" class="mode-toggle-btn active" id="btn-mode-demo">Demo / Mock
+                                    Data</button>
+                                <button type="button" class="mode-toggle-btn" id="btn-mode-live">Clover REST API
+                                    v3</button>
+                            </div>
+                        </div>
+
+                        <!-- Clover Configurations -->
+                        <div id="clover-config-section" class="disabled-section">
+                            <div class="form-group">
+                                <label for="input-merchant-id">Clover Merchant ID</label>
+                                <input type="text" id="input-merchant-id" placeholder="Enter Merchant ID" required
+                                    disabled>
+                                <span class="input-tip">Found in your Clover Merchant Dashboard URL or Account
+                                    Settings.</span>
+                            </div>
+                            <div class="form-group">
+                                <label for="input-access-token">REST Access Token (Bearer API Token)</label>
+                                <input type="password" id="input-access-token" placeholder="Enter REST Access Token"
+                                    required disabled>
+                                <span class="input-tip">Generated via Setup -> Web App Tokens in Clover Merchant
+                                    Dashboard.</span>
+                            </div>
+                            <div class="form-group">
+                                <label for="select-env">API Environment</label>
+                                <select id="select-env" disabled>
+                                    <option value="prod">Production (api.clover.com)</option>
+                                    <option value="sandbox">Sandbox (apisandbox.dev.clover.com)</option>
+                                </select>
+                            </div>
+                            <div class="form-group check-group">
+                                <input type="checkbox" id="check-auto-tags" checked disabled>
+                                <label for="check-auto-tags">Auto-create tags (<code>hidden-tv</code> &amp;
+                                    <code>blur-tv</code>) on Clover if missing</label>
+                            </div>
+                            <div class="form-group">
+                                <button type="button" class="action-btn" id="btn-test-connection" disabled>Test Clover
+                                    Connection</button>
+                            </div>
+                        </div>
+
+                        <hr class="form-divider">
+
+                        <!-- TV Display Mappings -->
+                        <h3>Screen Category Routing</h3>
+                        <p class="form-section-tip">Choose which categories to display on each TV display screen (select
+                            multiple to combine categories).</p>
+
+                        <div class="form-grid" id="screen-routing-grid">
+                            <div class="form-group">
+                                <label>TV Screen 1</label>
+                                <div class="category-checklist-container" id="map-screen1-checklist"></div>
+                            </div>
+                            <div class="form-group">
+                                <label>TV Screen 2</label>
+                                <div class="category-checklist-container" id="map-screen2-checklist"></div>
+                            </div>
+                            <div class="form-group">
+                                <label>TV Screen 3</label>
+                                <div class="category-checklist-container" id="map-screen3-checklist"></div>
+                            </div>
+                            <div class="form-group">
+                                <label>TV Screen 4</label>
+                                <div class="category-checklist-container" id="map-screen4-checklist"></div>
+                            </div>
+                        </div>
+
+                        <!-- Extra screens added dynamically -->
+                        <div id="extra-screens-container"></div>
+
+                        <button type="button" class="add-screen-btn" id="add-screen-btn">
+                            <svg viewBox="0 0 24 24" width="16" height="16" fill="currentColor"><path d="M19 11h-6V5h-2v6H5v2h6v6h2v-6h6z"/></svg>
+                            Add Screen
+                        </button>
+
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="input-refresh-rate">Screen Refresh Interval (Seconds)</label>
+                                <input type="number" id="input-refresh-rate" value="10" min="0.5" step="0.5" max="300">
+                            </div>
+                            <div class="form-group">
+                                <label for="select-orientation">TV Screen Orientation</label>
+                                <select id="select-orientation">
+                                    <option value="portrait">Portrait (Vertical Display)</option>
+                                    <option value="landscape">Landscape (Horizontal Display)</option>
+                                    <option value="rotate90">Rotated 90° Clockwise</option>
+                                    <option value="rotate270">Rotated 90° Counter-Clockwise</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="select-ratio">Aspect Ratio Preset Override</label>
+                                <select id="select-ratio">
+                                    <option value="auto">Auto-Detect Device Ratio</option>
+                                    <option value="16-9">Wide Screen (16:9)</option>
+                                    <option value="4-3">Standard Screen (4:3)</option>
+                                    <option value="21-9">Ultrawide (21:9)</option>
+                                    <option value="9-16">Vertical Screen (9:16)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="submit-btn">Save Configurations</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- TV ROUTING SHORTCUT / LAUNCHER (Only visible when no route is loaded) -->
+        <main id="view-launcher" class="page-view hidden">
+            <div class="launcher-card glass">
+                <h1 class="glow-text">Clover Menu Hub Launcher</h1>
+                <p>Select which page mode this display is running:</p>
+                <div class="launcher-grid">
+                    <a href="?page=screen1" class="launcher-btn glass-btn">
+                        <span class="btn-title">TV Screen 1</span>
+                        <span class="btn-desc" id="lbl-screen1">Mains</span>
+                    </a>
+                    <a href="?page=screen2" class="launcher-btn glass-btn">
+                        <span class="btn-title">TV Screen 2</span>
+                        <span class="btn-desc" id="lbl-screen2">Sides</span>
+                    </a>
+                    <a href="?page=screen3" class="launcher-btn glass-btn">
+                        <span class="btn-title">TV Screen 3</span>
+                        <span class="btn-desc" id="lbl-screen3">Drinks</span>
+                    </a>
+                    <a href="?page=screen4" class="launcher-btn glass-btn">
+                        <span class="btn-title">TV Screen 4</span>
+                        <span class="btn-desc" id="lbl-screen4">Specials</span>
+                    </a>
+                    <a href="?page=admin" class="launcher-btn glass-btn admin-launch-btn">
+                        <span class="btn-title">Admin Console</span>
+                        <span class="btn-desc">Configure &amp; Override</span>
+                    </a>
+                </div>
+            </div>
+        </main>
+
+        <!-- FLOATING CONTROLS (Only visible on screens to switch routes or open settings) -->
+        <div class="floating-controls" id="floating-menu-controls">
+            <button class="floating-btn" id="float-settings-btn" title="Screen Settings">
+                <svg class="icon-gear" viewBox="0 0 24 24">
+                    <path fill="currentColor"
+                        d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58c.18-.14.23-.41.12-.61l-1.92-3.32c-.12-.22-.37-.29-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54c-.04-.24-.24-.41-.48-.41h-3.84c-.24 0-.43.17-.47.41l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.74 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58c-.18.14-.23.41-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.48.41h3.84c.24 0 .44-.17.47-.41l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z" />
+                </svg>
+            </button>
+            <a href="./" class="floating-btn" id="float-home-btn" title="Back to Launcher">
+                <svg viewBox="0 0 24 24" class="icon-home" fill="currentColor">
+                    <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+                </svg>
+            </a>
+        </div>
+
+    </div>
+
+    <!-- MAIN JAVASCRIPT -->
+    <script src="app.js?v=20"></script>
+</body>
+
+</html>
