@@ -15,7 +15,7 @@ const DEFAULT_CONFIG = {
     hiddenCategories: [], // Category names toggled off from all TV screens
     mappings: {
         screen1: 'Appetizer (Veg)',
-        screen2: 'Appetizer (Veg)',
+        screen2: 'Appetizer (Non-Veg)',
         screen3: 'Beverages',
         screen4: 'Biryanis/Pulao (Non-Veg)'
     }
@@ -4858,12 +4858,47 @@ function handleRouting() {
     applyOrientationClass(config.orientation);
 }
 
-// Update text labels on the launcher buttons
+// Update text labels on the launcher buttons and dynamically render extra screens
 function updateLauncherLabels() {
-    document.getElementById('lbl-screen1').innerText = formatLauncherLabel(config.mappings.screen1) || 'Mains';
-    document.getElementById('lbl-screen2').innerText = formatLauncherLabel(config.mappings.screen2) || 'Sides';
-    document.getElementById('lbl-screen3').innerText = formatLauncherLabel(config.mappings.screen3) || 'Drinks';
-    document.getElementById('lbl-screen4').innerText = formatLauncherLabel(config.mappings.screen4) || 'Specials';
+    const screen1Lbl = document.getElementById('lbl-screen1');
+    const screen2Lbl = document.getElementById('lbl-screen2');
+    const screen3Lbl = document.getElementById('lbl-screen3');
+    const screen4Lbl = document.getElementById('lbl-screen4');
+
+    if (screen1Lbl) screen1Lbl.innerText = formatLauncherLabel(config.mappings.screen1) || 'Appetizer (Veg)';
+    if (screen2Lbl) screen2Lbl.innerText = formatLauncherLabel(config.mappings.screen2) || 'Appetizer (Non-Veg)';
+    if (screen3Lbl) screen3Lbl.innerText = formatLauncherLabel(config.mappings.screen3) || 'Beverages';
+    if (screen4Lbl) screen4Lbl.innerText = formatLauncherLabel(config.mappings.screen4) || 'Biryanis/Pulao (Non-Veg)';
+
+    // Handle extra screen dynamic buttons in launcher grid
+    const launcherGrid = document.querySelector('.launcher-grid');
+    if (!launcherGrid) return;
+
+    // Clean up existing extra screen buttons
+    launcherGrid.querySelectorAll('.extra-launcher-btn').forEach(el => el.remove());
+
+    const adminBtn = launcherGrid.querySelector('.admin-launch-btn');
+
+    if (config.mappings) {
+        let i = 5;
+        while (config.mappings[`screen${i}`] !== undefined) {
+            const screenKey = `screen${i}`;
+            const label = formatLauncherLabel(config.mappings[screenKey]) || `Screen ${i}`;
+            const btn = document.createElement('a');
+            btn.href = `?page=${screenKey}`;
+            btn.className = 'launcher-btn glass-btn extra-launcher-btn';
+            btn.innerHTML = `
+                <span class="btn-title">TV Screen ${i}</span>
+                <span class="btn-desc" id="lbl-${screenKey}">${label}</span>
+            `;
+            if (adminBtn) {
+                launcherGrid.insertBefore(btn, adminBtn);
+            } else {
+                launcherGrid.appendChild(btn);
+            }
+            i++;
+        }
+    }
 }
 
 function formatLauncherLabel(val) {
