@@ -1449,7 +1449,7 @@ body.tv-mode .menu-item-name-group {
 
 body.tv-mode .menu-item-name {
     color: #000000 !important;
-    font-weight: 800;
+    font-weight: 900 !important;
     font-size: var(--tv-font-size, calc(3.6 * var(--tv-unit-v))) !important;
     /* Programmatically scaled */
     letter-spacing: -0.5px;
@@ -1473,7 +1473,7 @@ body.tv-mode .diet-indicator {
     justify-content: center !important;
     width: calc(0.8 * var(--tv-unit-v)) !important;
     height: calc(0.8 * var(--tv-unit-v)) !important;
-    border: calc(0.1 * var(--tv-unit-v)) solid currentColor !important;
+    border: calc(0.12 * var(--tv-unit-v)) solid currentColor !important;
     border-radius: calc(0.2 * var(--tv-unit-v)) !important;
     flex-shrink: 0 !important;
     box-sizing: border-box !important;
@@ -1514,7 +1514,7 @@ body.tv-mode .menu-item-dots {
 
 body.tv-mode .menu-item-price {
     color: #000000 !important;
-    font-weight: 800;
+    font-weight: 900 !important;
     font-size: var(--tv-font-size, calc(3.6 * var(--tv-unit-v))) !important;
     /* Matches name height */
     text-shadow: none !important;
@@ -1522,6 +1522,7 @@ body.tv-mode .menu-item-price {
 
 body.tv-mode .menu-item-description {
     font-size: var(--tv-desc-font-size, calc(1.8 * var(--tv-unit-v))) !important;
+    font-weight: 600 !important;
     color: #000000 !important;
 }
 
