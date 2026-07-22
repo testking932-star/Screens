@@ -3719,8 +3719,8 @@ function getCloverBaseUrl() {
 }
 
 async function cloverRequest(path, options = {}) {
-    const baseUrl = getCloverBaseUrl();
-    const url = `${baseUrl}/merchants/${config.merchantId}${path}`;
+    const proxyBaseUrl = getCloverBaseUrl();
+    const primaryUrl = `${proxyBaseUrl}/merchants/${config.merchantId}${path}`;
 
     const headers = {
         'Authorization': `Bearer ${config.accessToken}`,
@@ -3729,7 +3729,22 @@ async function cloverRequest(path, options = {}) {
         'X-Clover-Env': config.environment
     };
 
-    const response = await fetch(url, { ...options, headers });
+    let response;
+    try {
+        response = await fetch(primaryUrl, { ...options, headers });
+        if (response.status === 404) {
+            // If proxy route is missing (404), throw error to trigger direct fallback
+            throw new Error('Proxy 404');
+        }
+    } catch (proxyError) {
+        // Fallback directly to Clover REST API endpoint
+        const directBaseUrl = config.environment === 'prod' 
+            ? 'https://api.clover.com/v3' 
+            : 'https://apisandbox.dev.clover.com/v3';
+        const fallbackUrl = `${directBaseUrl}/merchants/${config.merchantId}${path}`;
+        
+        response = await fetch(fallbackUrl, { ...options, headers });
+    }
 
     if (!response.ok) {
         const errText = await response.text();
@@ -3738,6 +3753,7 @@ async function cloverRequest(path, options = {}) {
 
     return response.status === 204 ? null : response.json();
 }
+
 
 async function testCloverConnection() {
     if (!config.merchantId || !config.accessToken) {
