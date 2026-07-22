@@ -3803,16 +3803,24 @@ async function fetchCloverInventory() {
         let hasMore = true;
 
         while (hasMore) {
-            const data = await cloverRequest(`/items?limit=${limit}&offset=${offset}&expand=categories,tags,itemStock`);
-            const elements = data.elements || [];
-            if (elements.length === 0) {
-                hasMore = false;
-            } else {
-                allItems = allItems.concat(elements);
-                offset += elements.length; // Move offset by actual elements returned
-                if (elements.length < limit) {
+            try {
+                const data = await cloverRequest(`/items?limit=${limit}&offset=${offset}&expand=categories,tags,itemStock`);
+                const elements = data.elements || [];
+                if (elements.length === 0) {
                     hasMore = false;
+                } else {
+                    allItems = allItems.concat(elements);
+                    offset += elements.length; // Move offset by actual elements returned
+                    if (elements.length < limit) {
+                        hasMore = false;
+                    } else {
+                        // Pause 250ms between pages to respect Clover API rate limits
+                        await new Promise(r => setTimeout(r, 250));
+                    }
                 }
+            } catch (pageErr) {
+                console.warn('Clover pagination stopped due to rate limit or end of items:', pageErr);
+                hasMore = false;
             }
         }
 
